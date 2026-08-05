@@ -1,1 +1,3 @@
 .env
+__pycache__/
+generate_wav_files.py
