@@ -73,14 +73,58 @@ async def countdown(interaction: discord.Interaction, seconds: int):
         f"Starting countdown from {seconds}!"
     )
 
-    for number in range(seconds, -1, -1):
-        print(number)
-        create_countdown_audio(
-            start=number,
-            output="countdown.wav"
+    print("Counting from: ", seconds)
+    create_countdown_audio(
+        start=seconds,
+        output="countdown.wav"
+    )
+    if voice_client.is_playing():
+        await interaction.followup.send("Please wait for the countdown to finish.")
+        return
+    audio = discord.FFmpegPCMAudio("countdown.wav")
+    voice_client.play(audio)
+    while voice_client.is_playing():
+        await asyncio.sleep(0.05)
+
+@bot.tree.command(
+    name="stop",
+    description="Stop a current countdown in progress"
+)
+async def stop(interaction: discord.Interaction):
+
+    if interaction.user.voice is None:
+        await interaction.response.send_message(
+            "You need to be in a voice channel first.",
         )
-        audio = discord.FFmpegPCMAudio("countdown.wav")
-        voice_client.play(audio)
+        return
+
+    voice_client = interaction.guild.voice_client
+
+
+    if voice_client is None:
+        await interaction.response.send_message(
+            "I'm not currently in a voice channel."
+        )
+        return
+
+    elif voice_client.channel != interaction.user.voice.channel:
+        await interaction.response.send_message(
+            "You must be in the same voice channel as me."
+        )
+        return
+
+
+    if not voice_client.is_playing():
+        await interaction.followup.send(
+            "There is no countdown currently playing."
+        )
+        return
+
+    voice_client.stop()
+
+    await interaction.response.send_message("Stopped countdown!")
+
+
 
 async def play_number(voice_client: discord.VoiceClient, number: int):
     if number == 0:
