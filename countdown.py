@@ -1,6 +1,8 @@
 import os
 import asyncio
 import time
+import wave
+from pathlib import Path
 
 import discord
 from discord import app_commands
@@ -73,7 +75,12 @@ async def countdown(interaction: discord.Interaction, seconds: int):
 
     for number in range(seconds, -1, -1):
         print(number)
-        await play_number(voice_client, number)
+        create_countdown_audio(
+            start=number,
+            output="countdown.wav"
+        )
+        audio = discord.FFmpegPCMAudio("countdown.wav")
+        voice_client.play(audio)
 
 async def play_number(voice_client: discord.VoiceClient, number: int):
     if number == 0:
@@ -85,6 +92,18 @@ async def play_number(voice_client: discord.VoiceClient, number: int):
     while voice_client.is_playing():
         await asyncio.sleep(0.01)
 
+def create_countdown_audio(start: int, output: str):
+    files = [Path(f"audio/{number}.wav") for number in range(start, -1, -1)]
+
+    # https://stackoverflow.com/questions/2890703/how-to-join-two-wav-files-using-python
+    with wave.open(str(files[0]), "rb") as first:
+        params = first.getparams()
+    with wave.open(output, "wb") as outfile:
+        outfile.setparams(params)
+
+        for file in files:
+            with wave.open(str(file), "rb") as infile:
+                outfile.writeframes(infile.readframes(infile.getnframes()))
 
 bot.run(TOKEN)
 
