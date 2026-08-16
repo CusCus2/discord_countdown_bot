@@ -124,6 +124,37 @@ async def stop(interaction: discord.Interaction):
 
     await interaction.response.send_message("Stopped countdown!")
 
+@bot.tree.command(
+    name="leave_call",
+    description="Leave the current voice channel"
+)
+async def leave_call(interaction: discord.Interaction):
+
+    if interaction.user.voice is None:
+        await interaction.response.send_message(
+            "You need to be in a voice channel first.",
+        )
+        return
+
+    voice_client = interaction.guild.voice_client
+
+
+    if voice_client is None:
+        await interaction.response.send_message(
+            "I'm not currently in a voice channel."
+        )
+        return
+
+    elif voice_client.channel != interaction.user.voice.channel:
+        await interaction.response.send_message(
+            "You must be in the same voice channel as me."
+        )
+        return
+
+
+    voice_client.channel.disconnect()
+
+    await interaction.response.send_message("Left the voice channel!")
 
 
 async def play_number(voice_client: discord.VoiceClient, number: int):
