@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
+# TEST_SERVER_ID = os.getenv("TEST_SERVER_ID")
+# TEST_GUILD = discord.Object(id=TEST_SERVER_ID)
 
 intents = discord.Intents.default()
 
@@ -22,8 +24,9 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
-    await bot.tree.sync()
+    synced = await bot.tree.sync()
     print(f"Logged in as {bot.user}")
+    print(f"Synced {len(synced)} commands")
 
 
 
@@ -152,7 +155,7 @@ async def leave_call(interaction: discord.Interaction):
         return
 
 
-    voice_client.channel.disconnect()
+    await voice_client.disconnect()
 
     await interaction.response.send_message("Left the voice channel!")
 
